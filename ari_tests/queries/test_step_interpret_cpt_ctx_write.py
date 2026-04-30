@@ -76,7 +76,7 @@ class TestStepInterpretCptExecuteReadsFromCtx:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -110,7 +110,7 @@ class TestStepInterpretCptExecuteReadsFromCtx:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -191,7 +191,7 @@ class TestStepInterpretCptExecuteCallsInterpretCpt:
         mock_interp_func = MagicMock()
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -210,34 +210,6 @@ class TestStepInterpretCptExecuteCallsInterpretCpt:
             assert call_args.kwargs["cpt"] is cpt
             assert call_args.kwargs["interpretation_function"] is mock_interp_func
 
-    def test_interpret_cpt_function_in_workflows_module(self):
-        """Behavior 3: interpret_cpt is available in ari.workflows.soil_interpretation."""
-        from ari.workflows import soil_interpretation as si_mod
-
-        assert hasattr(si_mod, "interpret_cpt")
-        assert callable(si_mod.interpret_cpt)
-
-    def test_soil_profile_to_db_not_imported_in_queries_module(self):
-        """Behavior 3: soil_profile_to_db is NOT imported in ari.queries.soil_interpretation.
-
-        StepInterpretCpt only imports interpret_cpt from workflows module.
-        The workflows module may still have soil_profile_to_db (used by legacy query_* functions),
-        but the queries module (which contains the Step class) should not import it.
-        """
-        import ari.queries.soil_interpretation as qsi_mod
-        import ari.workflows.soil_interpretation as wsi_mod
-
-        # Verify soil_profile_to_db is NOT in the queries module (Step location)
-        assert not hasattr(qsi_mod, "soil_profile_to_db"), (
-            "soil_profile_to_db should not be imported in ari.queries.soil_interpretation"
-        )
-
-        # Verify interpret_cpt IS available in workflows module (Step's dependency)
-        assert hasattr(wsi_mod, "interpret_cpt"), (
-            "interpret_cpt should be available in ari.workflows.soil_interpretation"
-        )
-
-
 class TestStepInterpretCptExecuteSetsBasedOn:
     """Tests for Behavior 4: execute() sets soil_profile.based_on = cpt_name."""
 
@@ -253,7 +225,7 @@ class TestStepInterpretCptExecuteSetsBasedOn:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             # Create a mock soil profile that we can inspect
             mock_soil_profile = MagicMock()
@@ -283,7 +255,7 @@ class TestStepInterpretCptExecuteSetsBasedOn:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             # Use real SoilProfile from test_utils fixture
             mock_interpret.return_value = sp
@@ -316,7 +288,7 @@ class TestStepInterpretCptExecuteWritesToCtx:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -343,7 +315,7 @@ class TestStepInterpretCptExecuteWritesToCtx:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -376,7 +348,7 @@ class TestStepInterpretCptExecuteWritesToCtx:
         cpt_dict = {cpt.id_: cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -416,7 +388,7 @@ class TestStepInterpretCptExecuteNoRegression:
         mock_interp_func = MagicMock()
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile
@@ -446,7 +418,7 @@ class TestStepInterpretCptExecuteNoRegression:
         cpt_dict = {"MY-CPT-NAME": cpt}
 
         with patch(
-            "ari.workflows.soil_interpretation.interpret_cpt"
+            "ari.queries.soil_interpretation.interpret_cpt"
         ) as mock_interpret:
             mock_soil_profile = MagicMock()
             mock_interpret.return_value = mock_soil_profile

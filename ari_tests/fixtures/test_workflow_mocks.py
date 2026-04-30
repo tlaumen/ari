@@ -5,13 +5,34 @@ Tests for workflow_mocks.py: SequentialMock, GUIMock, and mock_llm_reports.
 import pytest
 from unittest.mock import MagicMock
 
+from baml_client import sync_client
+from baml_client.types import (
+    ReportBaseLineIntroduction,
+    ReportBaseLineSoilInvestigation,
+)
+from baml_client.types import (
+    ReportBaseLineAssumptions,
+    ReportBaseLineModelling,
+    ModellingPointers,
+)
+from baml_client.types import (
+    ReportBaseResults,
+    ReportBaseLineConclusion,
+    ResultPointers,
+)
+from baml_client import sync_client
+
+from ceniac.soil_profile.soil_profile import SoilProfile, Layer
+
+from ari_tests.fixtures.workflow_mocks import SequentialMock
+from ari_tests.fixtures.workflow_mocks import GUIMock
+from ari_tests.fixtures.workflow_mocks import mock_llm_reports
 
 class TestSequentialMock:
     """Tests for SequentialMock class."""
 
     def test_sequential_mock_add_prompt(self):
         """Verify values are queued via add_prompt."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         seq.add_prompt("value1", "value2", "value3")
@@ -21,7 +42,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_add_choice(self):
         """Verify values are queued via add_choice."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         seq.add_choice(0, 1, 2)
@@ -30,7 +50,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_add_confirm(self):
         """Verify values are queued via add_confirm."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         seq.add_confirm(True, False, True)
@@ -39,7 +58,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_empty_prompt_raises(self):
         """Verify empty mock context manager can be created with no values."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
 
@@ -55,7 +73,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_order(self):
         """Verify FIFO ordering across prompt, choice, confirm queues."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         seq.add_prompt("p1", "p2")
@@ -73,7 +90,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_returns_self(self):
         """Verify method chaining works (returns self)."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         result = seq.add_prompt("test")
@@ -82,7 +98,6 @@ class TestSequentialMock:
 
     def test_sequential_mock_multiple_add_calls(self):
         """Verify multiple add calls accumulate values."""
-        from ari_tests.fixtures.workflow_mocks import SequentialMock
 
         seq = SequentialMock()
         seq.add_prompt("a")
@@ -97,7 +112,6 @@ class TestGUIMock:
 
     def test_gui_mock_init(self):
         """Test that GUIMock initializes with no mocks configured."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
 
         gui = GUIMock()
 
@@ -108,7 +122,6 @@ class TestGUIMock:
 
     def test_gui_mock_location(self):
         """Test that mock_location configures the selector to return configured point."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
 
         gui = GUIMock()
         test_point = (100000.0, 450000.0)
@@ -123,8 +136,6 @@ class TestGUIMock:
 
     def test_gui_mock_interpreter(self):
         """Test that mock_interpreter configures the interpreter to return configured profile."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
-        from ceniac.soil_profile.soil_profile import SoilProfile, Layer
 
         gui = GUIMock()
         test_profile = SoilProfile(
@@ -142,7 +153,6 @@ class TestGUIMock:
 
     def test_gui_mock_context_patches_pile_location_selector(self):
         """Test that mock() context patches pile_location_selector."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
 
         gui = GUIMock()
         test_point = (155000.0, 463000.0)
@@ -151,7 +161,7 @@ class TestGUIMock:
         # Act & Assert
         with gui.mock():
             # pile_location_selector should be patched
-            from ari.workflows.calculate.pile import pile_location_selector
+            from ari.queries.pile_calc import pile_location_selector
 
             selector = pile_location_selector([])
             assert selector.get_point() == test_point
@@ -159,8 +169,6 @@ class TestGUIMock:
 
     def test_gui_mock_context_patches_run_interpreter(self):
         """Test that mock() context patches run_interpreter."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
-        from ceniac.soil_profile.soil_profile import SoilProfile, Layer
 
         gui = GUIMock()
         test_profile = SoilProfile(
@@ -173,14 +181,13 @@ class TestGUIMock:
 
         # Act & Assert
         with gui.mock():
-            from ari.workflows.soil_interpretation import run_interpreter
+            from ari.queries.soil_interpretation import run_interpreter
 
             result = run_interpreter(None, None, None)
             assert result == test_profile
 
     def test_gui_mock_chaining(self):
         """Test that methods can be chained."""
-        from ari_tests.fixtures.workflow_mocks import GUIMock
 
         gui = GUIMock()
         result = gui.mock_location((1, 2)).mock_interpreter("profile")
@@ -192,22 +199,6 @@ class TestMockLlmReports:
 
     def test_A1_patched_methods_return_str(self):
         """Test A1: each patched method returns a str."""
-        from ari_tests.fixtures.workflow_mocks import mock_llm_reports
-        from baml_client import sync_client
-        from baml_client.types import (
-            ReportBaseLineIntroduction,
-            ReportBaseLineSoilInvestigation,
-        )
-        from baml_client.types import (
-            ReportBaseLineAssumptions,
-            ReportBaseLineModelling,
-            ModellingPointers,
-        )
-        from baml_client.types import (
-            ReportBaseResults,
-            ReportBaseLineConclusion,
-            ResultPointers,
-        )
 
         with mock_llm_reports():
             # Call each patched method with a minimal valid input (mock ignores the arg)
@@ -255,22 +246,6 @@ class TestMockLlmReports:
 
     def test_A2_patched_methods_return_chapter_names(self):
         """Test A2: each patched method returns a non-empty string containing the chapter name."""
-        from ari_tests.fixtures.workflow_mocks import mock_llm_reports
-        from baml_client import sync_client
-        from baml_client.types import (
-            ReportBaseLineIntroduction,
-            ReportBaseLineSoilInvestigation,
-        )
-        from baml_client.types import (
-            ReportBaseLineAssumptions,
-            ReportBaseLineModelling,
-            ModellingPointers,
-        )
-        from baml_client.types import (
-            ReportBaseResults,
-            ReportBaseLineConclusion,
-            ResultPointers,
-        )
 
         with mock_llm_reports():
             intro = ReportBaseLineIntroduction(pointers=[], elements=[])
@@ -329,8 +304,6 @@ class TestMockLlmReports:
 
     def test_A3_original_methods_restored_outside_context(self):
         """Test A3: outside the context, FoundationDesignIntroductionReporter is the original method."""
-        from ari_tests.fixtures.workflow_mocks import mock_llm_reports
-        from baml_client import sync_client
 
         # Capture original
         original = sync_client.b.FoundationDesignIntroductionReporter

@@ -1,10 +1,9 @@
-from ari.classify_work import agent_loop
 import shutil
 from pathlib import Path
 
 if __name__ == "__main__":
     try:
-        agent_loop()
+        print("IMPLEMENT CORRECTLY WITH STEPRUNNER!")
     except Exception as e:
         print(e)
 

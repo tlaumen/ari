@@ -297,7 +297,7 @@ class TestStepCpt:
         db.calc.set_calc("folder-grondonderzoek", Path.cwd())
 
         with patch("ari.queries.soil_interpretation.load_cpt") as mock_load:
-            with patch("ari.workflows.soil_interpretation.find_cpt") as mock_find:
+            with patch("ari.queries.soil_interpretation.find_cpt") as mock_find:
                 # find_cpt returns a single Path
                 mock_path = MagicMock()
                 mock_path.stem = "CPT002"
@@ -333,7 +333,7 @@ class TestStepCpt:
         db.calc.set_calc("folder-grondonderzoek", Path.cwd())
 
         with patch("ari.queries.soil_interpretation.load_cpt") as mock_load:
-            with patch("ari.workflows.soil_interpretation.find_cpt") as mock_find:
+            with patch("ari.queries.soil_interpretation.find_cpt") as mock_find:
                 # find_cpt returns a single Path (not a list)
                 mock_path = MagicMock()
                 mock_path.stem = "CPT002"

@@ -52,9 +52,9 @@ def mock_llm_reports() -> Iterator[None]:
     # Patch _llm_text_generation_router to reset model_input.elements before
     # each reporter call (to_llm_input() mutates elements in-place, breaking
     # the 2nd call on the same model_input instance)
-    from ari.report import pile as pile_module
+    from ari.queries import pile_report as pile_report_module
 
-    original_router = pile_module._llm_text_generation_router
+    original_router = pile_report_module._llm_text_generation_router
 
     def patched_router(section_input: Any) -> str:
         # Reset elements so to_llm_input() always sees an empty list
@@ -66,13 +66,13 @@ def mock_llm_reports() -> Iterator[None]:
         for method_name, text in reporters.items():
             setattr(b, method_name, make_reporter(text))
         # Apply patch to router
-        pile_module._llm_text_generation_router = patched_router
+        pile_report_module._llm_text_generation_router = patched_router
         yield
     finally:
         # Restore originals
         for method_name, original in originals.items():
             setattr(b, method_name, original)
-        pile_module._llm_text_generation_router = original_router
+        pile_report_module._llm_text_generation_router = original_router
 
 
 class SequentialMock:
@@ -245,7 +245,7 @@ class GUIMock:
 
                 stack.enter_context(
                     patch(
-                        "ari.workflows.calculate.pile.pile_location_selector",
+                        "ari.queries.pile_calc.pile_location_selector",
                         side_effect=make_location_handler(),
                     )
                 )
@@ -253,7 +253,7 @@ class GUIMock:
             if self._soil_profile is not None:
                 stack.enter_context(
                     patch(
-                        "ari.workflows.soil_interpretation.run_interpreter",
+                        "ari.queries.soil_interpretation.run_interpreter",
                         return_value=self._soil_profile,
                     )
                 )

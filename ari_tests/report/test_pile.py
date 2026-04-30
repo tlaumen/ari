@@ -3,12 +3,10 @@ from unittest.mock import MagicMock
 
 from ceniac.calculate.pile import PileResult, PileResults
 from ceniac.parameters.model import PileFoundationParams
-from ari.report.pile import (
+from ari.queries.pile_report import (
     _create_pile_factors_table,
-    query_foundation_report,
-    create_report,
 )
-from ari.report.pile import _create_params_table, _create_bearing_capacity_table
+from ari.queries.pile_report import _create_params_table, _create_bearing_capacity_table
 
 from baml_client.types import (
     ReportBaseLineModelling,
@@ -21,90 +19,10 @@ from baml_client.types import ReportBaseLineAssumptions
 
 from ari.report.report import _SectionInput
 from ari.report.table import Table
-from ari.workflows.calculate.pile import PileType
-from ari.report.pile import _llm_text_generation_router
+from ari.queries.pile_calc import PileType
+from ari.queries.pile_report import _llm_text_generation_router
 from ari_tests.fixtures.workflow_mocks import SequentialMock, mock_llm_reports
 
-
-@pytest.mark.auto
-def test_query_foundation_report(setup_report_test_db):
-    """Test foundation report query with mocked prompts and confirms.
-
-    The SequentialMock provides:
-    - 5 prompts (one per chapter: Soil investigation, Uitgangspunten,
-      Modelling - cpts used, Introductie, Conclusie)
-    - 5 confirms (all False to exit after one pointer per chapter)
-    """
-    seq = SequentialMock()
-    # 5 chapters × 1 prompt each + 5 confirms (all False to exit loop)
-    seq.add_prompt("Soil investigation pointer")
-    seq.add_prompt("Uitgangspunten pointer")
-    seq.add_prompt("Modelling pointer")
-    seq.add_prompt("Introductie pointer")
-    seq.add_prompt("Conclusie pointer")
-    seq.add_confirm(False, False, False, False, False)
-
-    with seq.mock():
-        (
-            intro_base_line,
-            si_base_line,
-            assumptions_base_line,
-            modelling_base_line,
-            results_base_line,
-            conclusion_base_line,
-        ) = query_foundation_report()
-
-    assert isinstance(intro_base_line.model_input, ReportBaseLineIntroduction)
-    assert isinstance(si_base_line.model_input, ReportBaseLineSoilInvestigation)
-    assert isinstance(assumptions_base_line.model_input, ReportBaseLineAssumptions)
-    assert isinstance(modelling_base_line.model_input, ReportBaseLineModelling)
-    assert isinstance(results_base_line.model_input, ReportBaseResults)
-    assert isinstance(conclusion_base_line.model_input, ReportBaseLineConclusion)
-
-
-@pytest.mark.auto
-def test_create_report(setup_report_test_db):
-    """Test B1-B6: query_foundation_report returns 6 _SectionInput objects,
-    each with the correct BAML model_input type, and create_report runs
-    without raising ValueError or NotImplementedError.
-    """
-    # B1: 5 prompts (one per chapter) + 5 confirms (all False to exit loop)
-    seq = SequentialMock()
-    seq.add_prompt("Soil investigation pointer")
-    seq.add_prompt("Uitgangspunten pointer")
-    seq.add_prompt("Modelling pointer")
-    seq.add_prompt("Introductie pointer")
-    seq.add_prompt("Conclusie pointer")
-    seq.add_confirm(False, False, False, False, False)
-
-    # B2: Enter both mocks
-    with seq.mock(), mock_llm_reports():
-        # B3: query_foundation_report returns exactly 6 elements
-        chapter_pointers = query_foundation_report()
-        assert len(chapter_pointers) == 6
-
-        # B4: each element is an instance of _SectionInput
-        for item in chapter_pointers:
-            assert isinstance(item, _SectionInput)
-
-        # B5: each model_input is the correct BAML type
-        (
-            intro_base_line,
-            si_base_line,
-            assumptions_base_line,
-            modelling_base_line,
-            results_base_line,
-            conclusion_base_line,
-        ) = chapter_pointers
-        assert isinstance(intro_base_line.model_input, ReportBaseLineIntroduction)
-        assert isinstance(si_base_line.model_input, ReportBaseLineSoilInvestigation)
-        assert isinstance(assumptions_base_line.model_input, ReportBaseLineAssumptions)
-        assert isinstance(modelling_base_line.model_input, ReportBaseLineModelling)
-        assert isinstance(results_base_line.model_input, ReportBaseResults)
-        assert isinstance(conclusion_base_line.model_input, ReportBaseLineConclusion)
-
-        # B3 / Test B3: create_report runs without raising ValueError or NotImplementedError
-        create_report(chapter_pointers)
 
 
 @pytest.mark.auto
@@ -129,7 +47,7 @@ def test_create_params_table():
             undrained_shear_strength=30,
         ),
     ]
-    table = _create_params_table(params)
+    table = _create_params_table(params, 1)
     assert table.data == {
         "Grondsoort": ["zand", "klei"],
         "Natuurlijk vol. gewicht [kN/m3]": ["18", "15"],
@@ -140,14 +58,14 @@ def test_create_params_table():
 
 @pytest.mark.auto
 def test_create_pile_factors_table():
-    t = _create_pile_factors_table(pile_type=PileType.BUISSCHROEFPAAL)
+    t = _create_pile_factors_table(pile_type=PileType.BUISSCHROEFPAAL, table_number=1)
     assert isinstance(t, Table)
 
-    t = _create_pile_factors_table(pile_type=PileType.VIBROPAAL)
+    t = _create_pile_factors_table(pile_type=PileType.VIBROPAAL, table_number=1)
     assert isinstance(t, Table)
 
     with pytest.raises(NotImplementedError):
-        _ = _create_pile_factors_table(pile_type=3)  # pyright: ignore
+        _ = _create_pile_factors_table(pile_type=3, table_number=1)  # pyright: ignore
 
 
 @pytest.mark.auto
@@ -177,7 +95,7 @@ def test_create_bearing_capacity_table():
     ]
     results = PileResults(pile="1", results=_results)  # pyright: ignore
     # Call the function
-    table = _create_bearing_capacity_table(results)
+    table = _create_bearing_capacity_table(results, 1)
 
     # Assert the result is a Table
     assert isinstance(table, Table)

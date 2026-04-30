@@ -34,8 +34,8 @@ from baml_client.sync_client import b
 
 from ari.queries.base import Step, Table
 from ari.report.table import Table as ReportTable
-from ari.workflows.soil_interpretation import CPT_NAME_KEY
-from ari.workflows.calculate.pile import (
+from ari.queries.soil_interpretation import CPT_NAME_KEY
+from ari.queries.pile_calc import (
     CALCULATION_RESULTS_KEY,
     FUTURE_GROUND_LEVEL_KEY,
     PHREATIC_LEVEL_KEY,
@@ -47,7 +47,7 @@ from ari.workflows.calculate.pile import (
     WORK_ORDER_KEY,
     PileType,
 )
-from ari.workflows.calculate.pile import PILE_TYPE_KEY
+from ari.queries.pile_calc import PILE_TYPE_KEY
 from ari.report.report import _SectionInput
 from ari.report.plot import Plot
 from ari.report.report import Section

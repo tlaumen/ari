@@ -18,8 +18,8 @@ from ari.queries.pile_report import StepSoilInvestigationChapter, REPORT_SI_KEY,
 from ari.queries.pile_report import StepResultsChapter, StepAssumptionsChapter, StepModellingChapter, REPORT_MODELLING_KEY, REPORT_RESULTS_KEY, REPORT_INTRODUCTION_KEY
 from ari.queries.pile_report import StepIntroductionChapter, REPORT_CONCLUSION_KEY, StepConclusionChapter, StepCreateReport, REPORT_KEY, CAPTION_NUMBERS_KEY
 from ari.report.report import _SectionInput, CaptionNumbers
-from ari.workflows.soil_interpretation import CPT_NAME_KEY
-from ari.workflows.calculate.pile import (
+from ari.queries.soil_interpretation import CPT_NAME_KEY
+from ari.queries.pile_calc import (
     CALCULATION_RESULTS_KEY,
     FUTURE_GROUND_LEVEL_KEY,
     PHREATIC_LEVEL_KEY,
@@ -30,8 +30,8 @@ from ari.workflows.calculate.pile import (
     ULS_LOAD_KEY,
     WORK_ORDER_KEY,
     PileType,
+    PILE_TYPE_KEY
 )
-from ari.workflows.calculate.pile import PILE_TYPE_KEY
 
 from ari_tests.fixtures.workflow_mocks import SequentialMock
 

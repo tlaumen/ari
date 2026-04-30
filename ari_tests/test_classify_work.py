@@ -7,9 +7,7 @@ import pytest
 from baml_client.types import TypeOfWork
 from baml_client.types import VerzoekVerduidelijking, Berekening
 
-from ari.classify_work import route_prompt, route_workflows, run_call_chain
-from ari.workflows.derive_params import query_pile_foundation_soil_params
-from ari.report.pile import query_foundation_report
+from ari.classify_work import route_prompt, route_workflows
 from ari.classify_work import request_clarification
 from ari.queries.soil_interpretation import SOIL_INTERPRETATION_STEPS
 from ari.queries.derive_params import DERIVE_PARAMS_STEPS
@@ -18,7 +16,6 @@ from ari.queries.pile_report import PILE_REPORTING_STEPS
 from ari.queries.base import Table, StepRunner
 from ari.db.db import db
 from ari_tests.fixtures.workflow_mocks import SequentialMock
-
 
 # Tests for Step 12: Compose PAALFUNDERING_STEPS in classify_work.py
 
@@ -88,20 +85,6 @@ class TestRouteWorkflowsBehavior:
             # Verify run() was called with db
             mock_runner_instance.run.assert_called_once_with(mock_db)
 
-    @pytest.mark.auto
-    def test_route_workflows_returns_query_foundation_report(self, mock_db):
-        """route_workflows() should return list containing query_foundation_report."""
-        with patch("ari.classify_work.StepRunner") as mock_runner:
-            mock_runner_instance = Mock()
-            mock_runner_instance.run.return_value = {}
-            mock_runner.return_value = mock_runner_instance
-
-            result = route_workflows(response=Berekening.PAALFUNDERING, db=mock_db)
-
-            # Result should be a list containing query_foundation_report
-            assert isinstance(result, list)
-            assert query_foundation_report in result
-            assert len(result) == 1  # Only query_foundation_report in the returned list
 
     @pytest.mark.auto
     def test_route_workflows_raises_not_implemented_for_non_paalfundering(
@@ -112,71 +95,6 @@ class TestRouteWorkflowsBehavior:
             route_workflows(response=Berekening.STABILITEIT, db=mock_db)
 
 
-class TestRoutePromptIntegration:
-    """Tests for route_prompt() integration with route_workflows()."""
-
-    @pytest.fixture
-    def mock_db(self):
-        """Create a mock database instance."""
-        return Mock()
-
-    @pytest.mark.auto
-    def test_route_prompt_passes_db_to_route_workflows(self, mock_db):
-        """route_prompt() should pass db parameter to route_workflows()."""
-        with patch("ari.classify_work.route_workflows") as mock_route_workflows:
-            mock_route_workflows.return_value = [query_foundation_report]
-
-            # Initialize a calculation session first (required by current implementation)
-            with patch.object(mock_db, "calc"):
-                route_prompt(response=Berekening.PAALFUNDERING)
-
-            # Verify route_workflows was called with db parameter
-            mock_route_workflows.assert_called_once()
-            # Check that db was passed as second argument
-            _, kwargs = mock_route_workflows.call_args
-            assert "db" in kwargs or len(mock_route_workflows.call_args[0]) >= 2
-
-
-# Legacy tests (to be updated when old workflow functions are deprecated)
-
-
-@pytest.mark.auto
-def test_route_workflows_legacy():
-    """Legacy test for old behavior - to be updated when StepRunner is fully integrated."""
-    from ari.classify_work import PAALFUNDERING_STEPS
-
-    # This test checks the old behavior for backward compatibility during transition
-    mock_db = Mock()
-    with patch("ari.classify_work.StepRunner") as mock_runner:
-        mock_runner_instance = Mock()
-        mock_runner_instance.run.return_value = {}
-        mock_runner.return_value = mock_runner_instance
-
-        call_chain: list[Callable] = route_workflows(
-            response=Berekening.PAALFUNDERING, db=mock_db
-        )
-    # Old behavior returned the full query chain, new behavior returns only query_foundation_report
-    # This test documents the expected change
-    assert query_foundation_report in call_chain
-
-    with pytest.raises(NotImplementedError):
-        _ = route_workflows(response=Berekening.STABILITEIT, db=mock_db)
-
-
-@pytest.mark.auto
-def test_route_prompt_berekening():
-    """Test route_prompt for Berekening.PAALFUNDERING with StepRunner mocked."""
-    # Mock StepRunner to avoid actual step execution (which requires user prompts)
-    with patch("ari.classify_work.StepRunner") as mock_runner:
-        mock_runner_instance = Mock()
-        mock_runner_instance.run.return_value = {}
-        mock_runner.return_value = mock_runner_instance
-
-        call_chain: list[Callable] = route_prompt(response=Berekening.PAALFUNDERING)
-
-        # With StepRunner integrated, route_prompt should return [query_foundation_report]
-        # as the final step after StepRunner completes
-        assert call_chain == [query_foundation_report]
 
 
 @pytest.mark.auto

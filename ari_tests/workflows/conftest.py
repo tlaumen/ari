@@ -22,7 +22,7 @@ from ari.db.db import (
     db,
 )
 from ari.db.database import Table
-from ari.workflows.calculate.pile import (
+from ari.queries.pile_calc import (
     PILE_TYPE_KEY,
     PILE_DIMENSIONS_KEY,
     PILE_LOCATION_KEY,

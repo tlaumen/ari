@@ -10,7 +10,7 @@ from typing import Any
 
 from ari.queries.base import Table, Requirement, Product, Step, StepRunner
 from geolib.models.dfoundations.profiles import TimeOrderType
-from ari.workflows.calculate.pile import PileType
+from ari.queries.pile_calc import PileType
 
 
 class TestStepRunPileCalc:

@@ -4,9 +4,8 @@ import colorsys
 from matplotlib.colors import rgb2hex
 import pytest
 
-from ari.workflows import soil_interpretation
-from ari.workflows.soil_interpretation import find_cpt, interpret_cpt, load_cpt
-from ari.workflows.soil_interpretation import _is_word_in_string
+from ari.queries.soil_interpretation import find_cpt, interpret_cpt, load_cpt
+from ari.queries.soil_interpretation import _is_word_in_string
 from ceniac.soil_investigation.interpret import naive_qc_rf
 
 

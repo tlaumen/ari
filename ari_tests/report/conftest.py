@@ -28,8 +28,8 @@ from ari.db.db import (
 from ari.db.database import Database
 from ari.db.database import Table
 from ari_tests.test_utils import DB_DUMP_FOLDER, cpt, sp
-from ari.workflows.soil_interpretation import CPT_NAME_KEY
-from ari.workflows.calculate.pile import (
+from ari.queries.soil_interpretation import CPT_NAME_KEY
+from ari.queries.pile_calc import (
     PILE_TYPE_KEY,
     PILE_TIP_LEVEL_KEY,
     WORK_ORDER_KEY,
