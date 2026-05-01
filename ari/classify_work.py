@@ -16,7 +16,7 @@ from ari.queries.soil_interpretation import SOIL_INTERPRETATION_STEPS
 from ari.queries.derive_params import DERIVE_PARAMS_STEPS
 from ari.queries.pile_calc import PILE_CALC_STEPS
 from ari.queries.pile_report import PILE_REPORTING_STEPS
-from ari.db.db import create_new_calculation_table, initialize_db, Database
+from ari.db.database import Database
 
 
 # Compose PAALFUNDERING_STEPS by concatenating all workflow step lists

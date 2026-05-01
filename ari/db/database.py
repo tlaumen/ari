@@ -232,3 +232,15 @@ class Database:
         for id_, session_data in data["sessions"].items():
             self.calc.sessions[id_] = CalcTableEntry(**session_data)
         self.calc._current_session_id = data["_current_session_id"]
+
+def create_db_folder(db: Database, path: Path | None = None):
+    """Creates persistant storage"""
+    # If path is not specified, use current working directory user
+    if path is None:
+        path = Path.cwd()
+
+    # Set the db singleton's dump path
+    db._dump_path = path / ".ceniac"
+
+    # If the database does not exist, create the folder
+    db._dump_path.mkdir(parents=True, exist_ok=True)

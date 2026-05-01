@@ -14,13 +14,6 @@ import pytest
 # Import fresh_db from sibling directory to ensure fixture chain works
 from ari_tests.db.conftest import fresh_db  # noqa: F401
 
-from ari.db.db import (
-    initialize_db,
-    color_to_db,
-    create_new_calculation_table,
-    write_calc_data,
-    db,
-)
 from ari.db.database import Table
 from ari.queries.pile_calc import (
     PILE_TYPE_KEY,
@@ -69,6 +62,7 @@ def workflow_db(fresh_db) -> "Database":
     Teardown:
         Uses fresh_db's teardown (clears tables, removes .ceniac folder)
     """
+    db = fresh_db
     # Add CPT
     db.add(Table.PROJECT, "cpts", cpt)
 
@@ -131,9 +125,8 @@ def workflow_db_with_session(workflow_db) -> "Database":
     Teardown:
         Uses workflow_db's teardown (via fresh_db's teardown)
     """
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
-
-    yield db
+    workflow_db.create_new_calculation_table(Berekening.PAALFUNDERING)
+    yield workflow_db
 
 
 @pytest.fixture
@@ -160,63 +153,44 @@ def paalfundering_full_db(workflow_db_with_session) -> "Database":
     Teardown:
         Uses workflow_db_with_session's teardown (via fresh_db's teardown)
     """
+    db = workflow_db_with_session 
+    
     # Pile type
-    write_calc_data(key=PILE_TYPE_KEY, data=PileType.SCHROEFPAAL)
+    db.add(source=Table.CALC, key=PILE_TYPE_KEY, value=PileType.SCHROEFPAAL)
 
     # Dimensions
-    write_calc_data(key=PILE_DIMENSIONS_KEY, data=650)
+    db.add(source=Table.CALC, key=PILE_DIMENSIONS_KEY, value=650)
 
     # Location
-    write_calc_data(key=PILE_LOCATION_KEY, data=(100000.0, 450000.0))
+    db.add(source=Table.CALC, key=PILE_LOCATION_KEY, value=(100000.0, 450000.0))
 
     # SLS and ULS loads
-    write_calc_data(key=SLS_LOAD_KEY, data=500.0)
-    write_calc_data(key=ULS_LOAD_KEY, data=700.0)
+    db.add(source=Table.CALC, key=SLS_LOAD_KEY, value=500.0)
+    db.add(source=Table.CALC, key=ULS_LOAD_KEY, value=700.0)
 
     # Pile tip level
-    write_calc_data(key=PILE_TIP_LEVEL_KEY, data=-15.0)
+    db.add(source=Table.CALC, key=PILE_TIP_LEVEL_KEY, value=-15.0)
 
     # Work order
-    write_calc_data(key=WORK_ORDER_KEY, data=TimeOrderType.CPT_EXCAVATION_INSTALL)
+    db.add(source=Table.CALC, key=WORK_ORDER_KEY, value=TimeOrderType.CPT_EXCAVATION_INSTALL)
 
     # Phreatic level
-    write_calc_data(key=PHREATIC_LEVEL_KEY, data=-1.0)
+    db.add(source=Table.CALC, key=PHREATIC_LEVEL_KEY, value=-1.0)
 
     # Structure rigidity
-    write_calc_data(key=STRUCTURE_RIGIDITY_KEY, data=True)
+    db.add(source=Table.CALC, key=STRUCTURE_RIGIDITY_KEY, value=True)
 
     # Future ground level
-    write_calc_data(key=FUTURE_GROUND_LEVEL_KEY, data=0.0)
+    db.add(source=Table.CALC, key=FUTURE_GROUND_LEVEL_KEY, value=0.0)
 
     # Skin friction ranges (empty)
-    write_calc_data(key=SKIN_FRICTION_RANGES_KEY, data={})
+    db.add(source=Table.CALC, key=SKIN_FRICTION_RANGES_KEY, value={})
 
     # Topview image (None)
-    write_calc_data(key=SOIL_INVESTIGATION_TOPVIEW_IMAGE, data=None)
+    db.add(source=Table.CALC, key=SOIL_INVESTIGATION_TOPVIEW_IMAGE, value=None)
 
     yield db
 
-
-@pytest.fixture
-def session_db(fresh_db) -> "Database":
-    """Yields Database object with calculation session created.
-
-    This fixture builds on `fresh_db` and adds:
-    - A calculation session with type Berekening.PAALFUNDERING
-
-    Unlike `workflow_db_with_session`, this fixture does NOT pre-populate
-    CPT, soil profile, or params data. Use this for E2E tests that need
-    to go through the full workflow including soil interpretation.
-
-    Yields:
-        Database: The database singleton with active session
-
-    Teardown:
-        Uses fresh_db's teardown (clears tables, removes .ceniac folder)
-    """
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
-
-    yield db
 
 
 @pytest.fixture

@@ -6,30 +6,7 @@ from pathlib import Path
 import pytest
 
 from ari.db.database import Database, CalcTableEntry, ProjectTable, Table
-from ari.db import db as db_module
-from ari.db.db import db as app_db
 from ari_tests.test_utils import cpt, sp
-
-
-def test_soil_profile_add_stores_based_on(fresh_db):
-    """db.add(Table.PROJECT, 'soilprofiles', sp) stores based_on from sp.based_on field."""
-    db_module.db.add(Table.PROJECT, "cpts", cpt)
-    sp.based_on = cpt.id_
-    db_module.db.add(Table.PROJECT, "soilprofiles", sp)
-
-    # based_on is the canonical tracker (not profilemap after Step 17)
-    assert sp in app_db.project.soilprofiles
-    assert app_db.project.soilprofiles[0].based_on == cpt.id_
-
-
-def test_add_cpt_stores_cpt_correctly(fresh_db):
-    """db.add(Table.PROJECT, 'cpts', cpt) stores cpt with id_ as key."""
-    assert len(app_db.project.cpts) == 0
-
-    db_module.db.add(Table.PROJECT, "cpts", cpt)
-
-    assert cpt in app_db.project.cpts
-    assert app_db.project.cpts[0] is cpt
 
 
 def test_database_dump_roundtrip_empty(tmp_path):

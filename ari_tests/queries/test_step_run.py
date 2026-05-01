@@ -14,6 +14,8 @@ from typing import Any
 
 from baml_client.types import Berekening
 
+from ceniac.soil_profile.soil_profile import SoilProfile
+
 from ari.db.database import Table, Database
 from ari.queries.base import (
     Table,
@@ -33,9 +35,8 @@ class TestStepRun:
         Given Product(key="result", dest=Table.CALC),
         db.calc.get_calc("result") should equal ctx["result"] after run().
         """
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
+        db = fresh_db
+        
         # Setup: Create a calc session
         db.calc.create_session(Berekening.PAALFUNDERING)
 
@@ -62,8 +63,7 @@ class TestStepRun:
         Given Product(key="ignored", dest=Table.PROJECT),
         the object should be added to the appropriate project sub-table.
         """
-        from ari.db.db import db
-        from ceniac.soil_profile.soil_profile import SoilProfile
+        db = fresh_db
 
         # Create a soil profile to add
         soil_profile = SoilProfile(
@@ -96,12 +96,10 @@ class TestStepRun:
         2. Call execute() with populated ctx
         3. Write outputs back to db based on produces
         """
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
         # Setup: Add CPT to project, create calc session with data
         from ari_tests.test_utils import cpt
 
+        db = fresh_db
         db.add(Table.PROJECT, "cpts", cpt)
         db.calc.create_session(Berekening.PAALFUNDERING)
         db.calc.set_calc("factor", 2.0)

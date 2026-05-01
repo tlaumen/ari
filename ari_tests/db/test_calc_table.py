@@ -6,7 +6,6 @@ from pathlib import Path
 from baml_client.types import Berekening
 
 from ari.db.database import CalcTableEntry, CalcTable, Database, ProjectTable
-from ari.db import db as db_module
 
 
 # =============================================================================
@@ -197,77 +196,10 @@ def test_database_calc_folder_returns_session_path():
 
 def test_create_new_calculation_table_creates_session_on_db(fresh_db):
     """create_new_calculation_table delegates to db.calc.create_session."""
-    from ari.db.db import create_new_calculation_table, db
 
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
+    fresh_db.create_new_calculation(calc=Berekening.PAALFUNDERING)
 
-    assert db.calc._current_session_id == 0
-    assert db.calc.sessions[0].type == Berekening.PAALFUNDERING
-
-
-# =============================================================================
-# Wrapper: write_calc_data delegates to db.calc
-# =============================================================================
+    assert fresh_db.calc._current_session_id == 0
+    assert fresh_db.calc.sessions[0].type == Berekening.PAALFUNDERING
 
 
-def test_write_calc_data_uses_db_singleton(fresh_db):
-    """write_calc_data writes to db.calc instead of legacy DB."""
-    from ari.db.db import write_calc_data, create_new_calculation_table, db
-
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
-    write_calc_data(key="answer", data=42)
-
-    # Verify data is stored in db.calc
-    assert db.calc.has("answer") is True
-    assert db.calc.get_calc("answer") == 42
-
-
-# =============================================================================
-# Wrapper: get_calc_data delegates to db.calc
-# =============================================================================
-
-
-def test_get_calc_data_uses_db_singleton(fresh_db):
-    """get_calc_data reads from db.calc instead of legacy DB."""
-    from ari.db.db import (
-        get_calc_data,
-        write_calc_data,
-        create_new_calculation_table,
-        db,
-    )
-
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
-    write_calc_data(key="x", data=99)
-
-    assert get_calc_data("x") == 99
-
-
-# =============================================================================
-# Wrapper: get_calc_folder delegates to db.calc_folder
-# =============================================================================
-
-
-def test_get_calc_folder_uses_db_calc_folder(fresh_db):
-    """get_calc_folder returns db.calc_folder."""
-    from ari.db.db import get_calc_folder, create_new_calculation_table, db
-
-    create_new_calculation_table(calc_type=Berekening.PAALFUNDERING)
-
-    result = get_calc_folder()
-
-    assert result == db.calc_folder
-
-
-# =============================================================================
-# Wrapper: initialize_db updates db._dump_path
-# =============================================================================
-
-
-def test_initialize_db_sets_db_dump_path(fresh_db):
-    """initialize_db sets db._dump_path to path / '.ceniac'."""
-    from ari.db.db import initialize_db, db
-    from ari_tests.test_utils import DB_DUMP_FOLDER
-
-    initialize_db(DB_DUMP_FOLDER)
-
-    assert db._dump_path == DB_DUMP_FOLDER / ".ceniac"

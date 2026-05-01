@@ -8,29 +8,34 @@ import pytest
 from unittest.mock import MagicMock, patch
 from typing import Any
 
+from ceniac.calculate.pile import PileResults
+
 from ari.queries.base import Table, Requirement, Product, Step, StepRunner
 from geolib.models.dfoundations.profiles import TimeOrderType
 from ari.queries.pile_calc import PileType
 
+from ari.queries.pile_calc import StepRunPileCalc, CALCULATION_RESULTS_KEY
+from ari.queries.base import Table
+
+from ari.queries.pile_calc import (
+    StepRunPileCalc,
+    CALCULATION_RESULTS_KEY,
+    PILE_TIP_LEVEL_KEY,
+    STRUCTURE_RIGIDITY_KEY,
+    WORK_ORDER_KEY,
+    PHREATIC_LEVEL_KEY,
+    PILE_TYPE_KEY,
+    PILE_DIMENSIONS_KEY,
+    FUTURE_GROUND_LEVEL_KEY,
+    PILE_LOCATION_KEY,
+    SKIN_FRICTION_RANGES_KEY,
+)
 
 class TestStepRunPileCalc:
     """Tests for StepRunPileCalc (ComputationStep)."""
 
     def test_step_class_structure(self):
         """Behavior 1: StepRunPileCalc has correct class structure."""
-        from ari.queries.pile_calc import (
-            StepRunPileCalc,
-            CALCULATION_RESULTS_KEY,
-            PILE_TIP_LEVEL_KEY,
-            STRUCTURE_RIGIDITY_KEY,
-            WORK_ORDER_KEY,
-            PHREATIC_LEVEL_KEY,
-            PILE_TYPE_KEY,
-            PILE_DIMENSIONS_KEY,
-            FUTURE_GROUND_LEVEL_KEY,
-            PILE_LOCATION_KEY,
-            SKIN_FRICTION_RANGES_KEY,
-        )
 
         # Check class attributes exist
         assert hasattr(StepRunPileCalc, "name")
@@ -42,7 +47,6 @@ class TestStepRunPileCalc:
 
     def test_step_requires_all_keys(self):
         """Behavior 1: Step requires 12 keys (9 CALC + 3 PROJECT, profilemap removed in Step 20)."""
-        from ari.queries.pile_calc import StepRunPileCalc
 
         requires = StepRunPileCalc.requires
 
@@ -69,9 +73,6 @@ class TestStepRunPileCalc:
 
     def test_step_requires_all_from_calc(self):
         """Behavior 1: 9 requirements from CALC, 3 from PROJECT (profilemap removed in Step 20)."""
-        from ari.queries.pile_calc import StepRunPileCalc
-        from ari.queries.base import Table
-
         requires = StepRunPileCalc.requires
 
         # 9 requirements from CALC
@@ -84,8 +85,6 @@ class TestStepRunPileCalc:
 
     def test_step_produces_to_calc(self):
         """Behavior 1: Produces CALCULATION_RESULTS_KEY to CALC table."""
-        from ari.queries.pile_calc import StepRunPileCalc, CALCULATION_RESULTS_KEY
-        from ari.queries.base import Table
 
         assert len(StepRunPileCalc.produces) == 1
         prod = StepRunPileCalc.produces[0]
@@ -94,11 +93,6 @@ class TestStepRunPileCalc:
 
     def test_execute_reads_required_data_from_ctx(self, fresh_db):
         """Behavior 2: Given ctx with all required keys, verify all values are read from ctx."""
-        from ari.queries.pile_calc import StepRunPileCalc
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Create context with all required data (Step 20: dict soilprofiles, no profilemap)
         ctx = {
@@ -136,11 +130,6 @@ class TestStepRunPileCalc:
 
     def test_execute_uses_inline_based_on_mapping(self, fresh_db):
         """Behavior 3 (Step 20): execute() uses inline based_on mapping, NOT combine_soil_profiles_cpts()."""
-        from ari.queries.pile_calc import StepRunPileCalc
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Mock data for ctx with dict soilprofiles and based_on
         mock_cpt = MagicMock()
@@ -185,11 +174,6 @@ class TestStepRunPileCalc:
 
     def test_execute_creates_pile_bearing_capacity_calc(self, fresh_db):
         """Behavior 4: execute() creates PileBearingCapacityCalc with all required parameters."""
-        from ari.queries.pile_calc import StepRunPileCalc
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Mock cpt_soil_profile_map return value
         mock_pile = MagicMock()
@@ -232,12 +216,6 @@ class TestStepRunPileCalc:
 
     def test_execute_stores_results_in_ctx(self, fresh_db):
         """Behavior 5: execute() stores calc.get_results() in ctx[CALCULATION_RESULTS_KEY]."""
-        from ari.queries.pile_calc import StepRunPileCalc, CALCULATION_RESULTS_KEY
-        from ceniac.calculate.pile import PileResults
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Create expected PileResults
         mock_pile = MagicMock()

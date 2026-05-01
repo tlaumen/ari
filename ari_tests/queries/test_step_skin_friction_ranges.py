@@ -8,6 +8,11 @@ import pytest
 from unittest.mock import MagicMock, patch
 from typing import Any
 
+from baml_client.types import Berekening
+
+from ceniac.calculate.pile import SkinFrictionRanges
+from ari.queries.pile_calc import StepSkinFrictionRanges
+
 from ari.queries.base import Table, Requirement, Product, Step, StepRunner
 
 
@@ -17,7 +22,6 @@ class TestStepSkinFrictionRanges:
     def test_step_class_structure(self):
         """Behavior 1: StepSkinFrictionRanges has correct class structure."""
         from ari.queries.pile_calc import (
-            StepSkinFrictionRanges,
             SKIN_FRICTION_RANGES_KEY,
             PILE_TIP_LEVEL_KEY,
         )
@@ -42,7 +46,6 @@ class TestStepSkinFrictionRanges:
 
     def test_step_requires_correct_keys(self):
         """Behavior 1: Step requires 5 keys from correct sources (no profilemap)."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
 
         requires = StepSkinFrictionRanges.requires
 
@@ -59,8 +62,6 @@ class TestStepSkinFrictionRanges:
 
     def test_step_requires_correct_sources(self):
         """Behavior 1: Step requires from correct sources (PROJECT for 4, CALC for 1)."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
-
         requires = StepSkinFrictionRanges.requires
 
         project_reqs = [r for r in requires if r.source == Table.PROJECT]
@@ -75,10 +76,8 @@ class TestStepSkinFrictionRanges:
     def test_step_produces_to_calc(self):
         """Behavior 1: Produces SKIN_FRICTION_RANGES_KEY to CALC table."""
         from ari.queries.pile_calc import (
-            StepSkinFrictionRanges,
             SKIN_FRICTION_RANGES_KEY,
         )
-        from ari.queries.pile_calc import Table
 
         assert len(StepSkinFrictionRanges.produces) == 1
         prod = StepSkinFrictionRanges.produces[0]
@@ -87,10 +86,8 @@ class TestStepSkinFrictionRanges:
 
     def test_execute_reads_based_on_from_soilprofiles(self, fresh_db):
         """Behavior 2: execute() reads sp.based_on from each SoilProfile in ctx['soilprofiles'].values()."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
-        from ari.db.db import db
-        from baml_client.types import Berekening
 
+        db = fresh_db
         db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Mock SoilProfile with based_on field
@@ -117,10 +114,7 @@ class TestStepSkinFrictionRanges:
 
     def test_execute_looks_up_cpt_from_ctx_using_based_on(self, fresh_db):
         """Behavior 3: execute() looks up CPT from ctx['cpts'][sp.based_on]."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
+        db = fresh_db
         db.calc.create_session(Berekening.PAALFUNDERING)
 
         # Mock CPT and SoilProfile
@@ -150,10 +144,8 @@ class TestStepSkinFrictionRanges:
 
     def test_execute_builds_mapping_inline_using_based_on(self, fresh_db):
         """Behavior: execute() builds CPT-to-profile mapping inline by reading sp.based_on."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
+        
+        db = fresh_db
         db.calc.create_session(Berekening.PAALFUNDERING)
 
         mock_cpt = MagicMock()
@@ -184,10 +176,8 @@ class TestStepSkinFrictionRanges:
 
     def test_execute_calls_select_skin_friction_areas(self, fresh_db):
         """Behavior: execute() calls select_skin_friction_areas() for each (cpt, soil_profile) pair."""
-        from ari.queries.pile_calc import StepSkinFrictionRanges
-        from ari.db.db import db
-        from baml_client.types import Berekening
 
+        db = fresh_db
         db.calc.create_session(Berekening.PAALFUNDERING)
 
         mock_cpt = MagicMock()
@@ -228,10 +218,7 @@ class TestStepSkinFrictionRanges:
             StepSkinFrictionRanges,
             SKIN_FRICTION_RANGES_KEY,
         )
-        from ceniac.calculate.pile import SkinFrictionRanges
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
+        db = fresh_db
         db.calc.create_session(Berekening.PAALFUNDERING)
 
         mock_cpt = MagicMock()

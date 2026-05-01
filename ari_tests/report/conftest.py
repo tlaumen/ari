@@ -15,16 +15,8 @@ from geolib.models.dfoundations import piles
 from ceniac.calculate.pile import PileResult, PileResults, SkinFrictionRanges
 from ceniac.parameters.model import PileFoundationParams, Color
 
-
 from baml_client.types import Berekening
-from ari.db.db import (
-    color_to_db,
-    create_new_calculation_table,
-    write_calc_data,
-    initialize_db,
-    dump_db,
-    db,
-)
+
 from ari.db.database import Database
 from ari.db.database import Table
 from ari_tests.test_utils import DB_DUMP_FOLDER, cpt, sp
@@ -66,6 +58,7 @@ def setup_report_test_db(fresh_db: Database):
     pile_module.table_number = 1
     pile_module.figure_number = 1
     
+    db = fresh_db
 
     # 1. Add CPT to database
     db.add(Table.PROJECT, "cpts", cpt)
@@ -112,23 +105,23 @@ def setup_report_test_db(fresh_db: Database):
     db.add(Table.CALC, PILE_TYPE_KEY, PileType.BUISSCHROEFPAAL) 
 
     # Pile tip level
-    write_calc_data(key=PILE_TIP_LEVEL_KEY, data=-10.5)
+    db.add(Table.CALC, key=PILE_TIP_LEVEL_KEY, value=-10.5)
 
     # Work order (CPT execution order)
-    write_calc_data(key=WORK_ORDER_KEY, data=TimeOrderType.CPT_EXCAVATION_INSTALL)
+    db.add(Table.CALC,  key=WORK_ORDER_KEY, value=TimeOrderType.CPT_EXCAVATION_INSTALL)
 
     # Phreatic level
-    write_calc_data(key=PHREATIC_LEVEL_KEY, data=-1.0)
+    db.add(Table.CALC, key=PHREATIC_LEVEL_KEY, value=-1.0)
 
     # Structure rigidity
-    write_calc_data(key=STRUCTURE_RIGIDITY_KEY, data=True)
+    db.add(Table.CALC, key=STRUCTURE_RIGIDITY_KEY, value=True)
 
     # Future ground level
-    write_calc_data(key=FUTURE_GROUND_LEVEL_KEY, data=0.0)
+    db.add(Table.CALC, key=FUTURE_GROUND_LEVEL_KEY, value=0.0)
 
     # SLS and ULS loads
-    write_calc_data(key=SLS_LOAD_KEY, data=500.0)
-    write_calc_data(key=ULS_LOAD_KEY, data=750.0)
+    db.add(Table.CALC, key=SLS_LOAD_KEY, value=500.0)
+    db.add(Table.CALC, key=ULS_LOAD_KEY, value=750.0)
 
     # Skin friction ranges
     skin_friction_ranges = {
@@ -137,7 +130,7 @@ def setup_report_test_db(fresh_db: Database):
             bottom_negative_skin_friction=-3.0,  # Bottom of negative skin friction (same as top of positive)
         )
     }
-    write_calc_data(key=SKIN_FRICTION_RANGES_KEY, data=skin_friction_ranges)
+    db.add(Table.CALC, key=SKIN_FRICTION_RANGES_KEY, value=skin_friction_ranges)
 
     # 7. Add mock calculation results
 
@@ -178,16 +171,13 @@ def setup_report_test_db(fresh_db: Database):
             ),
         ],
     )
-    write_calc_data(key=CALCULATION_RESULTS_KEY, data=calculation_results)
-
-    # Dump the database for potential inspection
-    dump_db()
+    db.add(Table.CALC, key=CALCULATION_RESULTS_KEY, value=calculation_results)
 
     # Yield control to the test
     yield
 
     # Teardown: clean up the database
-    _cleanup_report_test_db()
+    _cleanup_report_test_db(db)
 
 
 def get_report_test_data() -> dict[str, Any]:
@@ -234,7 +224,7 @@ def get_report_test_data() -> dict[str, Any]:
     }
 
 
-def _cleanup_report_test_db():
+def _cleanup_report_test_db(db: Database):
     """Clean up the test database after each test.
 
     This function:

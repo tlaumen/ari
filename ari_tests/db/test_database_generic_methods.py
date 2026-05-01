@@ -2,8 +2,6 @@
 
 import pytest
 from ari.db.database import Database, ProjectTable, CalcTable, Table
-from ari.db import db as db_module
-from ari.db.db import db as app_db
 from ari_tests.test_utils import cpt, sp
 
 
@@ -125,7 +123,7 @@ def test_database_add_project_routes_multiple_cpts_to_cpts(fresh_db):
     """db.add(Table.PROJECT, key, cpt) stores CPT in db.project.cpts."""
     db = fresh_db
     # First add the CPT it's based on
-    db_module.db.add(Table.PROJECT, "cpts", [cpt, cpt, cpt])
+    db.add(Table.PROJECT, "cpts", [cpt, cpt, cpt])
     assert len(db.project.cpts) == 3
     assert db.project.cpts[0].id_ == cpt.id_
 

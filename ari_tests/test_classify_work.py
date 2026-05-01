@@ -14,7 +14,6 @@ from ari.queries.derive_params import DERIVE_PARAMS_STEPS
 from ari.queries.pile_calc import PILE_CALC_STEPS
 from ari.queries.pile_report import PILE_REPORTING_STEPS
 from ari.queries.base import Table, StepRunner
-from ari.db.db import db
 from ari_tests.fixtures.workflow_mocks import SequentialMock
 
 # Tests for Step 12: Compose PAALFUNDERING_STEPS in classify_work.py

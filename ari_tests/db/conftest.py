@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from ari.db.db import initialize_db, db  # noqa: F401
-from ari.db.database import Table
+from ari.db.database import Table, Database, create_db_folder
 from ari_tests.test_utils import DB_DUMP_FOLDER
+from ari_tests.test_utils import sp
 
 
 @pytest.fixture
@@ -30,6 +30,7 @@ def fresh_db(request: pytest.FixtureRequest) -> "Database":
             db.add(Table.PROJECT, "cpts", my_cpt)
             assert my_cpt.id_ in fresh_db.project.cpts
     """
+    db = Database()
     db_path = DB_DUMP_FOLDER / ".ceniac"
 
     # Setup: Remove stale artifacts
@@ -39,12 +40,11 @@ def fresh_db(request: pytest.FixtureRequest) -> "Database":
     # Setup: Reset module-level fixture singletons that may carry state
     # from previous tests (in particular the `based_on` field which is
     # mutated in-place during the soil_profile_to_db pattern)
-    from ari_tests.test_utils import sp
 
     sp.based_on = None
 
     # Setup: Initialize fresh DB
-    initialize_db(DB_DUMP_FOLDER)
+    create_db_folder(db, DB_DUMP_FOLDER)
 
     yield db
 

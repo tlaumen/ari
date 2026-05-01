@@ -17,6 +17,17 @@ from ari.queries.base import Table, Requirement, Product, Step
 from ari_tests.fixtures.workflow_mocks import SequentialMock, GUIMock
 from prompt_toolkit.completion import WordCompleter
 
+from ari_tests.test_utils import cpt
+from baml_client.types import Berekening
+from ari.queries.soil_interpretation import StepSiFolder
+from ari.queries.soil_interpretation import StepCptPrompt, CPT_NAME_KEY
+from ari.queries.soil_interpretation import StepCpt
+from ari.queries.base import Product, Table
+from ari.queries.soil_interpretation import (
+    StepCptInterpretationMethod,
+    naive_qc_rf,
+)
+
 class TestStepSiFolder:
     """Tests for StepSiFolder (InputStep).
 
@@ -25,7 +36,6 @@ class TestStepSiFolder:
 
     def test_step_class_structure(self):
         """StepSiFolder has correct class structure."""
-        from ari.queries.soil_interpretation import StepSiFolder
 
         # Check class attributes exist
         assert hasattr(StepSiFolder, "name")
@@ -41,13 +51,7 @@ class TestStepSiFolder:
 
     def test_execute_stores_folder_in_ctx(self, fresh_db):
         """Behavior 1: execute() calls prompt() and stores result in ctx."""
-        from ari.queries.soil_interpretation import StepSiFolder
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session
-        db.calc.create_session(Berekening.PAALFUNDERING)
-
+        
         # Mock prompt to return a folder path
         seq = SequentialMock()
         seq.add_prompt("/test/folder")
@@ -72,13 +76,6 @@ class TestStepSiFolder:
 
     def test_execute_uses_cwd_on_empty_input(self, fresh_db):
         """Behavior 2: If user enters empty string, uses Path.cwd() as folder."""
-        from ari.queries.soil_interpretation import StepSiFolder
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session
-        db.calc.create_session(Berekening.PAALFUNDERING)
-
         # Mock prompt to return empty string
         seq = SequentialMock()
         seq.add_prompt("")  # Empty input
@@ -97,13 +94,6 @@ class TestStepSiFolder:
 
     def test_execute_raises_for_nonexistent_folder(self, fresh_db):
         """Behavior 3: Validates folder exists; raises ValueError if not."""
-        from ari.queries.soil_interpretation import StepSiFolder
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session
-        db.calc.create_session(Berekening.PAALFUNDERING)
-
         # Mock prompt to return a non-existent folder
         seq = SequentialMock()
         seq.add_prompt("/nonexistent/folder")
@@ -133,7 +123,6 @@ class TestStepCptPrompt:
 
     def test_step_class_structure(self):
         """StepCptPrompt has correct class structure."""
-        from ari.queries.soil_interpretation import StepCptPrompt, CPT_NAME_KEY
 
         # Check class attributes exist
         assert hasattr(StepCptPrompt, "name")
@@ -154,14 +143,6 @@ class TestStepCptPrompt:
 
     def test_execute_raises_when_no_cpts_available(self, fresh_db):
         """Behavior 1: Raises ValueError if no CPTs available."""
-        from ari.queries.soil_interpretation import StepCptPrompt
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session with NO CPTs
-        db.calc.create_session(Berekening.PAALFUNDERING)
-        # db.project.cpts is empty by default
-
         step = StepCptPrompt()
         ctx: dict[str, Any] = {"cpts": []}
 
@@ -174,13 +155,6 @@ class TestStepCptPrompt:
 
     def test_execute_prompts_with_word_completer(self, fresh_db):
         """Behavior 2: execute() prompts with WordCompleter populated from sorted CPT names."""
-        from ari.queries.soil_interpretation import StepCptPrompt, CPT_NAME_KEY
-        from ari.db.db import db
-        from ari_tests.test_utils import cpt
-        from baml_client.types import Berekening
-
-        # Setup: Add CPTs to database (in non-alphabetical order)
-        db.calc.create_session(Berekening.PAALFUNDERING)
         cpt1 = MagicMock()
         cpt1.id_ = "A-CPT"
         cpt2 = MagicMock(id_="M-CPT")
@@ -210,15 +184,6 @@ class TestStepCptPrompt:
 
     def test_execute_validates_selected_cpt_exists(self, fresh_db):
         """Behavior 3: Validates selected CPT exists; raises ValueError if not found."""
-        from ari.queries.soil_interpretation import StepCptPrompt
-        from ari.db.db import db
-        from ari_tests.test_utils import cpt
-        from baml_client.types import Berekening
-
-        # Setup: Add CPT to database
-        db.calc.create_session(Berekening.PAALFUNDERING)
-        db.project.cpts.append(cpt)
-
         # Mock prompt to return invalid CPT name
         seq = SequentialMock()
         seq.add_prompt("InvalidCPT")
@@ -235,14 +200,6 @@ class TestStepCptPrompt:
 
     def test_execute_stores_cpt_name_in_ctx(self, fresh_db):
         """Behavior 4: execute() stores selected CPT name in ctx[CPT_NAME_KEY]."""
-        from ari.queries.soil_interpretation import StepCptPrompt, CPT_NAME_KEY
-        from ari.db.db import db
-        from ari_tests.test_utils import cpt
-        from baml_client.types import Berekening
-
-        # Setup: Add CPTs to database
-        db.calc.create_session(Berekening.PAALFUNDERING)
-        
         # Mock prompt to return "CPT1"
         seq = SequentialMock()
         seq.add_prompt("CPT1")
@@ -266,8 +223,6 @@ class TestStepCpt:
 
     def test_step_class_structure(self):
         """StepCpt has correct class structure."""
-        from ari.queries.soil_interpretation import StepCpt
-        from ari.queries.base import Product, Table
 
         # Check class attributes exist
         assert hasattr(StepCpt, "name")
@@ -288,13 +243,6 @@ class TestStepCpt:
 
     def test_execute_stores_cpt_in_ctx(self, fresh_db):
         """Behavior 2: execute() stores CPT in ctx['cpts'] as a dict."""
-        from ari.queries.soil_interpretation import StepCpt
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session with folder
-        db.calc.create_session(Berekening.PAALFUNDERING)
-        db.calc.set_calc("folder-grondonderzoek", Path.cwd())
 
         with patch("ari.queries.soil_interpretation.load_cpt") as mock_load:
             with patch("ari.queries.soil_interpretation.find_cpt") as mock_find:
@@ -324,13 +272,6 @@ class TestStepCpt:
 
     def test_execute_handles_single_find_result(self, fresh_db):
         """Behavior 3: If find_cpt() returns single path, loads without prompting."""
-        from ari.queries.soil_interpretation import StepCpt
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session with folder
-        db.calc.create_session(Berekening.PAALFUNDERING)
-        db.calc.set_calc("folder-grondonderzoek", Path.cwd())
 
         with patch("ari.queries.soil_interpretation.load_cpt") as mock_load:
             with patch("ari.queries.soil_interpretation.find_cpt") as mock_find:
@@ -386,16 +327,6 @@ class TestStepCptInterpretationMethod:
 
     def test_execute_stores_interpretation_function(self, fresh_db):
         """Behavior 1-2: execute() calls choice() and stores function in ctx."""
-        from ari.queries.soil_interpretation import (
-            StepCptInterpretationMethod,
-            naive_qc_rf,
-        )
-        from ari.db.db import db
-        from baml_client.types import Berekening
-
-        # Setup: Create calc session
-        db.calc.create_session(Berekening.PAALFUNDERING)
-
         # Mock choice to return the function itself (first element of tuple)
         seq = SequentialMock()
         seq.add_choice(naive_qc_rf)  # choice() returns the first element of the tuple
@@ -406,4 +337,3 @@ class TestStepCptInterpretationMethod:
         with seq.mock():
             step.execute(ctx)
 
-        # Verify ctx contains the interpretation function
