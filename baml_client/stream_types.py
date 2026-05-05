@@ -23,13 +23,18 @@ class StreamState(BaseModel, typing.Generic[StreamStateValueT]):
     value: StreamStateValueT
     state: typing_extensions.Literal["Pending", "Incomplete", "Complete"]
 # #########################################################################
-# Generated classes (16)
+# Generated classes (18)
 # #########################################################################
 
 class AddTool(BaseModel):
     intent: typing.Optional[str] = None
     a: typing.Optional[typing.Union[int, float]] = None
     b: typing.Optional[typing.Union[int, float]] = None
+
+class Candidate(BaseModel):
+    chunk_id: typing.Optional[int] = None
+    text: typing.Optional[str] = None
+    similarity_score: typing.Optional[float] = None
 
 class ClarificationRequest(BaseModel):
     intent: typing.Optional[str] = None
@@ -83,6 +88,12 @@ class ReportBaseResults(BaseModel):
 class ReportElement(BaseModel):
     element: typing.Optional[str] = None
     description: typing.Optional[str] = None
+
+class RerankedMatch(BaseModel):
+    answer: typing.Optional[str] = None
+    source_chunk_index: typing.Optional[int] = None
+    relevance_score: typing.Optional[float] = None
+    reasoning: typing.Optional[str] = None
 
 class ResultPointers(BaseModel):
     pile_tip_range: typing.Optional[str] = None

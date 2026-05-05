@@ -20,7 +20,7 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(type_builder.TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["AddTool","ClarificationRequest","DivideTool","DoneForNow","ModellingPointers","MultiplyTool","ReportBaseLineAssumptions","ReportBaseLineConclusion","ReportBaseLineIntroduction","ReportBaseLineModelling","ReportBaseLineSoilInvestigation","ReportBaseResults","ReportElement","ResultPointers","SubtractTool","VerzoekVerduidelijking",]
+          ["AddTool","Candidate","ClarificationRequest","DivideTool","DoneForNow","ModellingPointers","MultiplyTool","ReportBaseLineAssumptions","ReportBaseLineConclusion","ReportBaseLineIntroduction","ReportBaseLineModelling","ReportBaseLineSoilInvestigation","ReportBaseResults","ReportElement","RerankedMatch","ResultPointers","SubtractTool","VerzoekVerduidelijking",]
         ), enums=set(
           ["Berekening","TypeOfWork",]
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
@@ -39,12 +39,16 @@ class TypeBuilder(type_builder.TypeBuilder):
 
 
     # #########################################################################
-    # Generated classes 16
+    # Generated classes 18
     # #########################################################################
 
     @property
     def AddTool(self) -> "AddToolViewer":
         return AddToolViewer(self)
+
+    @property
+    def Candidate(self) -> "CandidateViewer":
+        return CandidateViewer(self)
 
     @property
     def ClarificationRequest(self) -> "ClarificationRequestViewer":
@@ -93,6 +97,10 @@ class TypeBuilder(type_builder.TypeBuilder):
     @property
     def ReportElement(self) -> "ReportElementViewer":
         return ReportElementViewer(self)
+
+    @property
+    def RerankedMatch(self) -> "RerankedMatchViewer":
+        return RerankedMatchViewer(self)
 
     @property
     def ResultPointers(self) -> "ResultPointersViewer":
@@ -214,7 +222,7 @@ class TypeOfWorkValues:
 
 
 # #########################################################################
-# Generated classes 16
+# Generated classes 18
 # #########################################################################
 
 class AddToolAst:
@@ -260,6 +268,53 @@ class AddToolProperties:
     @property
     def b(self) -> type_builder.ClassPropertyViewer:
         return type_builder.ClassPropertyViewer(self.__bldr.property("b"))
+    
+    
+
+
+class CandidateAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("Candidate")
+        self._properties: typing.Set[str] = set([  "chunk_id",  "text",  "similarity_score",  ])
+        self._props = CandidateProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "CandidateProperties":
+        return self._props
+
+
+class CandidateViewer(CandidateAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class CandidateProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def chunk_id(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("chunk_id"))
+    
+    @property
+    def text(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("text"))
+    
+    @property
+    def similarity_score(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("similarity_score"))
     
     
 
@@ -796,6 +851,57 @@ class ReportElementProperties:
     @property
     def description(self) -> type_builder.ClassPropertyViewer:
         return type_builder.ClassPropertyViewer(self.__bldr.property("description"))
+    
+    
+
+
+class RerankedMatchAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("RerankedMatch")
+        self._properties: typing.Set[str] = set([  "answer",  "source_chunk_index",  "relevance_score",  "reasoning",  ])
+        self._props = RerankedMatchProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "RerankedMatchProperties":
+        return self._props
+
+
+class RerankedMatchViewer(RerankedMatchAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class RerankedMatchProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def answer(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("answer"))
+    
+    @property
+    def source_chunk_index(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("source_chunk_index"))
+    
+    @property
+    def relevance_score(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("relevance_score"))
+    
+    @property
+    def reasoning(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("reasoning"))
     
     
 

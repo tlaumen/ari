@@ -78,6 +78,12 @@ class LlmResponseParser:
         result = self.__options.merge_options(baml_options).parse_response(function_name="FoundationDesignSoilInvestigationReporter", llm_response=llm_response, mode="request")
         return typing.cast(str, result)
 
+    def RerankCandidates(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> typing.List["types.RerankedMatch"]:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="RerankCandidates", llm_response=llm_response, mode="request")
+        return typing.cast(typing.List["types.RerankedMatch"], result)
+
     
 
 class LlmStreamParser:
@@ -139,5 +145,11 @@ class LlmStreamParser:
     ) -> str:
         result = self.__options.merge_options(baml_options).parse_response(function_name="FoundationDesignSoilInvestigationReporter", llm_response=llm_response, mode="stream")
         return typing.cast(str, result)
+
+    def RerankCandidates(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> typing.List["stream_types.RerankedMatch"]:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="RerankCandidates", llm_response=llm_response, mode="stream")
+        return typing.cast(typing.List["stream_types.RerankedMatch"], result)
 
     

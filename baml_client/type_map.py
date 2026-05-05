@@ -19,6 +19,9 @@ type_map = {
     "types.AddTool": types.AddTool,
     "stream_types.AddTool": stream_types.AddTool,
 
+    "types.Candidate": types.Candidate,
+    "stream_types.Candidate": stream_types.Candidate,
+
     "types.ClarificationRequest": types.ClarificationRequest,
     "stream_types.ClarificationRequest": stream_types.ClarificationRequest,
 
@@ -54,6 +57,9 @@ type_map = {
 
     "types.ReportElement": types.ReportElement,
     "stream_types.ReportElement": stream_types.ReportElement,
+
+    "types.RerankedMatch": types.RerankedMatch,
+    "stream_types.RerankedMatch": stream_types.RerankedMatch,
 
     "types.ResultPointers": types.ResultPointers,
     "stream_types.ResultPointers": stream_types.ResultPointers,

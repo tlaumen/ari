@@ -214,6 +214,21 @@ class BamlAsyncClient:
                 "input": input,
             })
             return typing.cast(str, result.cast_to(types, types, stream_types, False, __runtime__))
+    async def RerankCandidates(self, query: str,candidates: typing.List["types.Candidate"],
+        baml_options: BamlCallOptions = {},
+    ) -> typing.List["types.RerankedMatch"]:
+        # Check if on_tick is provided
+        if 'on_tick' in baml_options:
+            # Use streaming internally when on_tick is provided
+            stream = self.stream.RerankCandidates(query=query,candidates=candidates,
+                baml_options=baml_options)
+            return await stream.get_final_response()
+        else:
+            # Original non-streaming code
+            result = await self.__options.merge_options(baml_options).call_function_async(function_name="RerankCandidates", args={
+                "query": query,"candidates": candidates,
+            })
+            return typing.cast(typing.List["types.RerankedMatch"], result.cast_to(types, types, stream_types, False, __runtime__))
     
 
 
@@ -331,6 +346,18 @@ class BamlStreamClient:
           lambda x: typing.cast(str, x.cast_to(types, types, stream_types, False, __runtime__)),
           ctx,
         )
+    def RerankCandidates(self, query: str,candidates: typing.List["types.Candidate"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[typing.List["stream_types.RerankedMatch"], typing.List["types.RerankedMatch"]]:
+        ctx, result = self.__options.merge_options(baml_options).create_async_stream(function_name="RerankCandidates", args={
+            "query": query,"candidates": candidates,
+        })
+        return baml_py.BamlStream[typing.List["stream_types.RerankedMatch"], typing.List["types.RerankedMatch"]](
+          result,
+          lambda x: typing.cast(typing.List["stream_types.RerankedMatch"], x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(typing.List["types.RerankedMatch"], x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
+        )
     
 
 class BamlHttpRequestClient:
@@ -402,6 +429,13 @@ class BamlHttpRequestClient:
             "input": input,
         }, mode="request")
         return result
+    async def RerankCandidates(self, query: str,candidates: typing.List["types.Candidate"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = await self.__options.merge_options(baml_options).create_http_request_async(function_name="RerankCandidates", args={
+            "query": query,"candidates": candidates,
+        }, mode="request")
+        return result
     
 
 class BamlHttpStreamRequestClient:
@@ -471,6 +505,13 @@ class BamlHttpStreamRequestClient:
     ) -> baml_py.baml_py.HTTPRequest:
         result = await self.__options.merge_options(baml_options).create_http_request_async(function_name="FoundationDesignSoilInvestigationReporter", args={
             "input": input,
+        }, mode="stream")
+        return result
+    async def RerankCandidates(self, query: str,candidates: typing.List["types.Candidate"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = await self.__options.merge_options(baml_options).create_http_request_async(function_name="RerankCandidates", args={
+            "query": query,"candidates": candidates,
         }, mode="stream")
         return result
     

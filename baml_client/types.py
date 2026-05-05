@@ -53,13 +53,18 @@ class TypeOfWork(str, Enum):
     REPORT = "REPORT"
 
 # #########################################################################
-# Generated classes (16)
+# Generated classes (18)
 # #########################################################################
 
 class AddTool(BaseModel):
     intent: typing_extensions.Literal['add']
     a: typing.Union[int, float]
     b: typing.Union[int, float]
+
+class Candidate(BaseModel):
+    chunk_id: int
+    text: str
+    similarity_score: float
 
 class ClarificationRequest(BaseModel):
     intent: typing_extensions.Literal['request_more_information']
@@ -113,6 +118,12 @@ class ReportBaseResults(BaseModel):
 class ReportElement(BaseModel):
     element: str
     description: str
+
+class RerankedMatch(BaseModel):
+    answer: str
+    source_chunk_index: int
+    relevance_score: float
+    reasoning: str
 
 class ResultPointers(BaseModel):
     pile_tip_range: str
